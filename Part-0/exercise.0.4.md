@@ -4,7 +4,7 @@ sequenceDiagram
     participant Server
 
     Note right of Browser: Browser captures note data from form.Browser sends the note data to server as a POST request.
-    Browser->>Server: POST https://studies.cs.helsinki.fi/exampleapp/updated_note with note data
+    Browser->>Server: POST https://studies.cs.helsinki.fi/exampleapp/new_note with note data
     activate Server
     Server-->>Browser: JSON response with success confirmation
     deactivate Server
