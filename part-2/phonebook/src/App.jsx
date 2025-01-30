@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const App = () => {
   // State to store the list of persons in the phonebook
-  const [persons, setPersons] = useState([{ name: 'pasang bhuti'}]);
+  const [persons, setPersons] = useState([{ name: 'pasang' }]);
 
   // State to store the new name from the input field
   const [newName, setNewName] = useState('');
@@ -15,10 +15,21 @@ const App = () => {
   // Function to handle the form submission
   const handleFormSubmit = (event) => {
     event.preventDefault(); // Prevent default form submission behavior
-    // Add the new name to the phonebook
-    const personObject = { name: newName };
-    setPersons(persons.concat(personObject));
-    setNewName(''); // Reset the input field after submission
+
+    // Check if the name already exists in the phonebook
+    const nameExists = persons.some(person => person.name === newName);
+
+    // If the name exists, show an alert and do not add it
+    if (nameExists) {
+      alert(`${newName} is already added to phonebook`);
+    } else {
+      // If the name does not exist, add it to the phonebook
+      const personObject = { name: newName };
+      setPersons(persons.concat(personObject));
+    }
+
+    // Reset the input field after submission
+    setNewName('');
   };
 
   return (
