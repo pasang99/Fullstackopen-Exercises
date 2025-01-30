@@ -1,61 +1,68 @@
-import React, { useState } from 'react';
-import Filter from './Filter';
-import PersonForm from './PersonForm';
-import Persons from './Persons';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import PersonForm from "./PersonForm";
+import Persons from "./Persons";
 
 const App = () => {
-  // State to store the list of persons
-  const [persons, setPersons] = useState([
-    { name: 'pasang', number: '9801234566', id: 1 },
-    { name: 'niru', number: '9801234567', id: 2 },
-    { name: 'muskan', number: '9801234568', id: 3 },
-    { name: 'deepanjali', number: '9801234569', id: 4 }
-  ]);
-
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
-  const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
 
-  const handleNameChange = (event) => setNewName(event.target.value);
-  const handleNumberChange = (event) => setNewNumber(event.target.value);
-  const handleFilterChange = (event) => setFilter(event.target.value);
+  useEffect(() => {
+    axios.get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching persons:', error);
+      });
+  }, []);
 
-  const handleSubmit = (event) => {
+  const addPerson = (event) => {
     event.preventDefault();
-
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
-      return;
-    }
-
-    const newPerson = {
+    const personObject = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1
+      id: persons.length + 1,
     };
 
-    setPersons(persons.concat(newPerson));
+    setPersons(persons.concat(personObject));
     setNewName('');
     setNewNumber('');
+  };
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+  };
+
+  const handleNameChange = (event) => {
+    setNewName(event.target.value);
+  };
+
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value);
   };
 
   return (
     <div>
       <h2>Phonebook</h2>
 
-      <Filter filter={filter} handleFilterChange={handleFilterChange} />
+      <div>
+        filter shown with <input value={search} onChange={handleSearchChange} />
+      </div>
 
       <h3>Add a new</h3>
-      <PersonForm
-        newName={newName}
-        newNumber={newNumber}
-        handleNameChange={handleNameChange}
-        handleNumberChange={handleNumberChange}
-        handleSubmit={handleSubmit}
+      <PersonForm 
+        newName={newName} 
+        newNumber={newNumber} 
+        handleNameChange={handleNameChange} 
+        handleNumberChange={handleNumberChange} 
+        addPerson={addPerson} 
       />
 
       <h3>Numbers</h3>
-      <Persons persons={persons} filter={filter} />
+      <Persons persons={persons} search={search} />
     </div>
   );
 };
