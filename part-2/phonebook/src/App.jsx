@@ -1,67 +1,44 @@
 import { useState } from 'react';
 
 const App = () => {
-  // State to store the list of persons (with both name and number)
-  const [persons, setPersons] = useState([{ name: 'pasang', number: '9809809809' }]);
+  // State to store the list of persons
+  const [persons, setPersons] = useState([
+    { name: 'pasang', number: '9801234566', id: 1 },
+    { name: 'niru', number: '9801234567', id: 2 },
+    { name: 'muskan', number: '9801234568', id: 3 },
+    { name: 'deepanjali', number: '9801234569', id: 4 }
+  ]);
 
-  // State to store the new name and number from the input fields
-  const [newName, setNewName] = useState('');
-  const [newNumber, setNewNumber] = useState('');
+  // State to store the search term
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Function to handle the name input change
-  const handleNameChange = (event) => {
-    setNewName(event.target.value);
+  // Function to handle the search input change
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
 
-  // Function to handle the number input change
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value);
-  };
-
-  // Function to handle the form submission
-  const handleFormSubmit = (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
-
-    // Check if the name already exists in the phonebook
-    const nameExists = persons.some(person => person.name === newName);
-
-    // If the name exists, show an alert and do not add it
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`);
-    } else {
-      // If the name does not exist, add the new person with their number to the phonebook
-      const personObject = { name: newName, number: newNumber };
-      setPersons(persons.concat(personObject));
-    }
-
-    // Reset the input fields after submission
-    setNewName('');
-    setNewNumber('');
-  };
+  // Filter persons based on the search term (case-insensitive)
+  const filteredPersons = persons.filter((person) =>
+    person.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
       <h2>Phonebook</h2>
 
-      {/* Form to add a new name and number */}
-      <form onSubmit={handleFormSubmit}>
-        <div>
-          name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      {/* Search input field */}
+      <div>
+        Filter by name: <input value={searchTerm} onChange={handleSearchChange} />
+      </div>
 
       <h2>Numbers</h2>
 
-      {/* List the phonebook entries */}
+      {/* List the filtered persons */}
       <ul>
-        {persons.map((person, index) => (
-          <li key={index}>{person.name} - {person.number}</li>
+        {filteredPersons.map((person) => (
+          <li key={person.id}>
+            {person.name} - {person.number}
+          </li>
         ))}
       </ul>
     </div>
