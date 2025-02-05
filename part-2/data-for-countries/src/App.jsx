@@ -1,56 +1,90 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import CountryList from './CountryList';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import SearchBar from "./components/SearchBar";
+import CountryList from "./components/CountryList";
+import CountryDetails from "./components/CountryDetails";
 
 const App = () => {
-  const [query, setQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState(null);
-  const [error, setError] = useState('');
+  const [weather, setWeather] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSearch = (e) => setQuery(e.target.value);
+  const api_key = import.meta.env.VITE_WEATHER_API_KEY; // Ensure this is correct
 
   useEffect(() => {
-    if (query) {
-      axios
-        .get(`https://restcountries.com/v3.1/name/${query}`)
-        .then((response) => setCountries(response.data))
-        .catch((error) => console.error('Error fetching countries:', error));
-    }
-  }, [query]);
+    const fetchData = async () => {
+      if (searchTerm.trim() === "") return;
 
-  const handleShowDetails = (countryName, capital) => {
-    const country = countries.find((c) => c.name.common === countryName);
-    setSelectedCountry(country);
+      try {
+        const response = await axios.get(
+          `https://restcountries.com/v3.1/name/${searchTerm}`
+        );
+        setCountries(response.data);
+        setSelectedCountry(null);
+        setErrorMessage("");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setErrorMessage("Error fetching data. Please try again later.");
+      }
+    };
+
+    fetchData();
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const fetchWeather = async (capital) => {
+      if (!capital) return;
+
+      console.log("Fetching weather for capital:", capital); // Log capital value
+
+      try {
+        const response = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${api_key}&units=metric`
+        );
+        console.log("Weather data:", response.data); // Log the response to check
+        setWeather(response.data);
+      } catch (error) {
+        console.error("Error fetching weather data:", error);
+        setErrorMessage("Error fetching weather data. Please try again later.");
+      }
+    };
+
+    if (selectedCountry && selectedCountry.capital) {
+      fetchWeather(selectedCountry.capital[0]); // Ensure this is correct
+    }
+  }, [selectedCountry]);
+
+  const handleSearchChange = (e) => {
+    if (e && e.preventDefault) {
+      e.preventDefault(); // Only call preventDefault if it's a valid event
+    }
+    setSearchTerm(e.target.value);
+  };
+  
+
+  const handleCountryClick = async (countryName) => {
+    try {
+      const response = await axios.get(
+        `https://restcountries.com/v3.1/name/${countryName}`
+      );
+      setSelectedCountry(response.data[0]);
+      setWeather(null);
+      setErrorMessage("");
+    } catch (error) {
+      console.error("Error fetching country details:", error);
+      setErrorMessage("Error fetching country details. Please try again later.");
+    }
   };
 
   return (
-    <div className="App">
-      <h1>Country Information</h1>
-      <input
-        type="text"
-        value={query}
-        onChange={handleSearch}
-        placeholder="Search for a country"
-      />
-      {error && <p>{error}</p>}
-      <div>
-        {countries.length > 10 ? (
-          <p>Too many matches, please specify further</p>
-        ) : countries.length > 1 ? (
-          <CountryList countries={countries} handleShowDetails={handleShowDetails} />
-        ) : selectedCountry ? (
-          <div>
-            <h2>{selectedCountry.name.common}</h2>
-            <p>Capital: {selectedCountry.capital[0]}</p>
-            <p>Area: {selectedCountry.area} km²</p>
-            <p>Languages: {Object.values(selectedCountry.languages).join(', ')}</p>
-            <img src={selectedCountry.flags[0]} alt="Flag" width="100" />
-          </div>
-        ) : (
-          <p>No country found</p>
-        )}
-      </div>
+    <div>
+      <h1>Country Search</h1>
+      <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+      {errorMessage && <p>{errorMessage}</p>}
+      <CountryList countries={countries} handleCountryClick={handleCountryClick} />
+      <CountryDetails country={selectedCountry} weather={weather} />
     </div>
   );
 };
