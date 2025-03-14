@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 // Middleware to parse JSON and enable CORS
 app.use(cors());
@@ -14,6 +15,9 @@ morgan.token('body', (req) => JSON.stringify(req.body));
 
 // Use morgan with a custom format that includes request body
 app.use(morgan(':method :url :status :response-time ms - :body'));
+
+// Serve static files from the dist folder
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Hardcoded phonebook entries
 let phonebook = [
@@ -49,6 +53,16 @@ app.post('/api/persons', (req, res) => {
 
   phonebook.push(newPerson);
   res.status(201).json(newPerson);
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.send({ status: 'Server is running' });
+});
+
+// Serve the frontend for unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
 });
 
 // Start the server
