@@ -1,14 +1,17 @@
 require('dotenv').config(); // Add this line at the top of the file
 
 const express = require('express');
-const app = express();
 const cors = require('cors');
-const { Person } = require('./mongo');
+const { Person } = require('./mongo'); // Import the Person model from mongo.js
+const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static('dist'));
+app.use(express.static('dist')); // This serves your frontend static files
 
+// API routes for persons
+
+// Get all persons from the database
 app.get('/api/persons', async (req, res, next) => {
   try {
     const persons = await Person.find({});
@@ -18,6 +21,7 @@ app.get('/api/persons', async (req, res, next) => {
   }
 });
 
+// Get info about the phonebook (number of persons and current date)
 app.get('/info', async (req, res, next) => {
   try {
     const count = await Person.countDocuments({});
@@ -27,6 +31,7 @@ app.get('/info', async (req, res, next) => {
   }
 });
 
+// Get a specific person by ID
 app.get('/api/persons/:id', async (req, res, next) => {
   try {
     const person = await Person.findById(req.params.id);
@@ -39,6 +44,7 @@ app.get('/api/persons/:id', async (req, res, next) => {
   }
 });
 
+// Delete a person by ID
 app.delete('/api/persons/:id', async (req, res, next) => {
   try {
     const result = await Person.findByIdAndDelete(req.params.id);
@@ -51,6 +57,7 @@ app.delete('/api/persons/:id', async (req, res, next) => {
   }
 });
 
+// Add a new person or update an existing person
 app.post('/api/persons', async (req, res, next) => {
   const { name, number } = req.body;
 
@@ -79,6 +86,7 @@ app.post('/api/persons', async (req, res, next) => {
   }
 });
 
+// Update a person's number
 app.put('/api/persons/:id', async (req, res, next) => {
   const { number } = req.body;
 
@@ -99,6 +107,7 @@ app.put('/api/persons/:id', async (req, res, next) => {
   }
 });
 
+// Global error handler
 app.use((error, request, response, next) => {
   console.error(error.message);
 
@@ -111,8 +120,9 @@ app.use((error, request, response, next) => {
   response.status(500).send({ error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT ? process.env.PORT : 3001;
-const MONGODB_URI = process.env.MONGODB_URI; // Ensure this is used in your MongoDB connection
+// Set port and MongoDB URI from environment variables
+const PORT = process.env.PORT || 3001;
+const MONGODB_URI = process.env.MONGODB_URI; // MongoDB URI from .env
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
