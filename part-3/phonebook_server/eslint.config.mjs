@@ -1,23 +1,13 @@
+import { defineConfig } from "eslint/config";
 import globals from "globals";
-import stylisticJs from '@stylistic/eslint-plugin-js'
-import js from '@eslint/js'
+import js from "@eslint/js";
+import pluginReact from "eslint-plugin-react";
 
-export default [
-  js.configs.recommended,
-  {
-    files: ["**/*.js"],
-    languageOptions: {
-      sourceType: "commonjs",
-      globals: {
-        ...globals.node,
-      },
-      ecmaVersion: "latest",
-    },
-    plugins: {
-      '@stylistic/js': stylisticJs
-    }
-  },
-  { 
-    ignores: ["dist/**", "build/**"],
-  },
-]
+
+export default defineConfig([
+  { files: ["**/*.{js,mjs,cjs,jsx}"] },
+  { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
+  { files: ["**/*.{js,mjs,cjs,jsx}"], languageOptions: { globals: globals.browser } },
+  { files: ["**/*.{js,mjs,cjs,jsx}"], plugins: { js }, extends: ["js/recommended"] },
+  pluginReact.configs.flat.recommended,
+]);
